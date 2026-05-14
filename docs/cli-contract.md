@@ -146,6 +146,8 @@ When a tool decision is `require_approval`, OpenGate stores the request and retu
 
 The MVP does not define the human approval command yet. Approval execution is a follow-up contract.
 
+Pending request storage is defined in [audit-and-storage.md](audit-and-storage.md).
+
 ## Validation Error Response
 
 Validation errors happen before execution. Examples include missing config, invalid config, unknown flags, malformed params, or missing required params.
@@ -178,6 +180,8 @@ If a tool exits with `2`, `3`, or `4`, the tool exit code still takes precedence
 Every request should produce a JSONL audit event when possible.
 
 The audit event should include request and decision metadata, but not tool output bodies. CLI response output and audit output are intentionally different.
+
+See [audit-and-storage.md](audit-and-storage.md) for the JSONL event contract.
 
 Useful MVP audit fields include:
 

@@ -35,6 +35,8 @@ See [docs/configuration.md](docs/configuration.md) for the MVP configuration con
 
 See [docs/cli-contract.md](docs/cli-contract.md) for the MVP agent-facing CLI contract.
 
+See [docs/audit-and-storage.md](docs/audit-and-storage.md) for the MVP audit and pending storage contract.
+
 ## Project Status
 
 OpenGate is in the bootstrap phase. The current focus is defining the project intent, collaboration rules, and initial architecture before choosing a runtime, language, package manager, or implementation structure.

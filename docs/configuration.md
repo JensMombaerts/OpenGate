@@ -162,6 +162,8 @@ audit:
 
 Audit events should include request and decision metadata. They should not include tool output bodies.
 
+See [audit-and-storage.md](audit-and-storage.md) for the MVP audit event and pending storage contract.
+
 Useful MVP audit fields include:
 
 - Request ID.
@@ -230,5 +232,4 @@ These topics are intentionally deferred until after the CLI MVP works:
 ## Open Questions
 
 - Should unknown tools default to `require_approval` forever, or should production configs use `deny`?
-- What storage format should pending approvals use in the first implementation?
 - Should MVP params support allowlists before the first release?

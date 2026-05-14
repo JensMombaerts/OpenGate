@@ -21,7 +21,7 @@ The MVP is intentionally small:
 - Unknown tools default to `require_approval`.
 - Tool output bodies are not written to audit logs.
 - Audit events are written as JSONL.
-- Pending approvals use the simplest practical local storage for the first implementation.
+- Pending approvals use file-based local storage for the first implementation.
 
 This MVP should answer one question: can an agent safely route CLI tool execution through OpenGate with clear decisions and useful audit records?
 
@@ -53,6 +53,8 @@ require_approval -> store pending request -> audit pending -> return request ID
 ```
 
 See [cli-contract.md](cli-contract.md) for the MVP agent-facing CLI request and response contract.
+
+See [audit-and-storage.md](audit-and-storage.md) for the MVP audit event and pending storage contract.
 
 ## Configuration
 
@@ -86,6 +88,8 @@ For the MVP, decisions are configured directly on each tool. A broader policy en
 
 Audit logs should be structured JSONL events.
 
+Pending approval records should use local JSON files under `.opengate/pending/`.
+
 MVP audit records should include enough metadata to understand what happened:
 
 - Request ID.
@@ -108,5 +112,4 @@ The MVP should prioritize two security concerns:
 ## Open Questions
 
 - Which runtime and language should implement the CLI MVP?
-- What is the simplest practical pending-approval storage for the MVP?
 - How should approval execution be triggered after a request is approved?
