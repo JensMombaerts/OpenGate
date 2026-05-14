@@ -34,7 +34,9 @@ This preference can change if implementation experience shows that TOML or JSON 
 
 ## Project Status
 
-OpenGate is in the bootstrap phase. The current focus is defining the project intent, collaboration rules, and a minimal foundation before choosing a runtime, language, or implementation architecture.
+OpenGate is in the bootstrap phase. The current focus is defining the project intent, collaboration rules, and initial architecture before choosing a runtime, language, package manager, or implementation structure.
+
+See [docs/architecture.md](docs/architecture.md) for the current architecture direction.
 
 ## License
 

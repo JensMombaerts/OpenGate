@@ -17,6 +17,7 @@ Design and implementation choices should preserve this intent: explicit access c
 - Do not force push unless the user explicitly requests it and understands the risk.
 - Do not commit secrets, credentials, tokens, or local machine-specific configuration.
 - Update documentation when behavior, architecture, or project conventions change.
+- Before committing documentation changes, check that `README.md`, `AGENTS.md`, and architecture documentation stay consistent with each other.
 - Avoid adding infrastructure, dependencies, or configuration files before there is a concrete need.
 
 ## Design Guidelines
