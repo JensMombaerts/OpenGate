@@ -144,7 +144,7 @@ When a tool decision is `require_approval`, OpenGate stores the request and retu
 }
 ```
 
-The MVP does not define the human approval command yet. Approval execution is a follow-up contract.
+Human approval commands are defined in [approval-cli.md](approval-cli.md).
 
 Pending request storage is defined in [audit-and-storage.md](audit-and-storage.md).
 
@@ -200,7 +200,7 @@ These are not part of this MVP CLI contract:
 
 - MCP tool requests.
 - HTTP tool requests.
-- Human approval commands.
+- Human approval commands, which are covered by [approval-cli.md](approval-cli.md).
 - Callback execution.
 - Agent/session/project identity flags.
 - Configurable response formats.

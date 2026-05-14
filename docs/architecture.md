@@ -50,9 +50,13 @@ agent -> OpenGate CLI -> load config -> resolve tool -> decision
 allow            -> execute tool -> audit result -> return result
 deny             -> audit denial -> return denial
 require_approval -> store pending request -> audit pending -> return request ID
+human deny      -> audit denial -> move request to resolved
+human approve   -> audit approval -> execute planned command -> audit result -> move request to resolved
 ```
 
 See [cli-contract.md](cli-contract.md) for the MVP agent-facing CLI request and response contract.
+
+See [approval-cli.md](approval-cli.md) for the MVP human approval CLI contract.
 
 See [audit-and-storage.md](audit-and-storage.md) for the MVP audit event and pending storage contract.
 
@@ -88,7 +92,7 @@ For the MVP, decisions are configured directly on each tool. A broader policy en
 
 Audit logs should be structured JSONL events.
 
-Pending approval records should use local JSON files under `.opengate/pending/`.
+Pending approval records should use local JSON files under `.opengate/pending/`. Resolved approval records should use local JSON files under `.opengate/resolved/`.
 
 MVP audit records should include enough metadata to understand what happened:
 
@@ -112,4 +116,3 @@ The MVP should prioritize two security concerns:
 ## Open Questions
 
 - Which runtime and language should implement the CLI MVP?
-- How should approval execution be triggered after a request is approved?

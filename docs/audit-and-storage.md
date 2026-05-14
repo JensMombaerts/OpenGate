@@ -1,10 +1,10 @@
 # Audit And Storage
 
-This document defines the MVP audit event and pending approval storage contract for OpenGate.
+This document defines the MVP audit event, pending approval storage, and resolved request storage contract for OpenGate.
 
 ## Goals
 
-- Correlate CLI responses, audit events, and pending approval records with one `request_id`.
+- Correlate CLI responses, audit events, pending approval records, and resolved records with one `request_id`.
 - Record enough metadata to understand gate decisions and executions.
 - Avoid writing tool output bodies to audit logs or pending request records.
 - Keep MVP pending storage simple and local.
@@ -19,6 +19,7 @@ The same `request_id` should appear in:
 - The CLI JSON response.
 - JSONL audit events.
 - Pending approval records when a request requires approval.
+- Resolved records after a human approval or denial.
 
 The exact ID format is implementation-defined, but IDs should be stable, unique, and safe for filenames.
 
@@ -56,9 +57,11 @@ The MVP should support these event types:
 - `validation_error`: OpenGate rejected the request before decision or execution.
 - `denied`: OpenGate denied the request and did not execute the tool.
 - `pending`: OpenGate stored the request for approval and did not execute the tool.
+- `approval_denied`: A human denied a pending request.
+- `approval_approved`: A human approved a pending request for execution.
 - `executed`: OpenGate executed an allowed or approved tool.
 
-Additional event types can be added later for human approval commands.
+See [approval-cli.md](approval-cli.md) for human approval commands.
 
 ## Validation Error Event
 
@@ -120,6 +123,33 @@ Validation errors should be audited when a request ID can be created safely.
 
 Executed events should record output byte counts, not output bodies.
 
+## Approval Denied Event
+
+```json
+{
+  "event": "approval_denied",
+  "request_id": "req_01j01...",
+  "timestamp": "2026-05-14T12:10:00Z",
+  "tool": "git_apply",
+  "decision": "deny",
+  "status": "denied",
+  "reason": "Not safe for this session"
+}
+```
+
+## Approval Approved Event
+
+```json
+{
+  "event": "approval_approved",
+  "request_id": "req_01j01...",
+  "timestamp": "2026-05-14T12:10:00Z",
+  "tool": "git_apply",
+  "decision": "allow",
+  "status": "approved"
+}
+```
+
 ## Pending Storage
 
 The MVP pending approval store is file-based.
@@ -149,17 +179,67 @@ A pending record should include the request data needed to review and later exec
   "params": {
     "patch_file": "/tmp/opencode/generated.patch"
   },
-  "resolved_command": ["git", "apply", "/tmp/opencode/generated.patch"]
+  "planned_command": ["git", "apply", "/tmp/opencode/generated.patch"]
 }
 ```
 
-The MVP does not define the approval command yet, but approval should execute the stored `resolved_command` so reviewers approve the exact command that was queued.
+Approval should execute the stored `planned_command` so reviewers approve the exact argv array that was queued.
+
+## Resolved Storage
+
+Resolved requests should be stored under:
+
+```text
+.opengate/resolved/<request_id>.json
+```
+
+OpenGate should move a pending request to resolved storage after a human approval or denial is recorded.
+
+## Resolved Denial Record
+
+```json
+{
+  "request_id": "req_01j01...",
+  "created_at": "2026-05-14T12:00:00Z",
+  "resolved_at": "2026-05-14T12:10:00Z",
+  "tool": "git_apply",
+  "decision": "deny",
+  "status": "denied",
+  "reason": "Not safe for this session",
+  "params": {
+    "patch_file": "/tmp/opencode/generated.patch"
+  },
+  "planned_command": ["git", "apply", "/tmp/opencode/generated.patch"]
+}
+```
+
+## Resolved Approval Record
+
+```json
+{
+  "request_id": "req_01j01...",
+  "created_at": "2026-05-14T12:00:00Z",
+  "resolved_at": "2026-05-14T12:10:00Z",
+  "tool": "git_apply",
+  "decision": "allow",
+  "status": "executed",
+  "params": {
+    "patch_file": "/tmp/opencode/generated.patch"
+  },
+  "planned_command": ["git", "apply", "/tmp/opencode/generated.patch"],
+  "execution": {
+    "exit_code": 0,
+    "stdout_bytes": 0,
+    "stderr_bytes": 0
+  }
+}
+```
 
 ## Output Handling
 
 The CLI response may include `stdout` and `stderr` bodies for executed tools.
 
-Audit events and pending records must not include `stdout` or `stderr` bodies in the MVP. They may include byte counts and execution metadata.
+Audit events, pending records, and resolved records must not include `stdout` or `stderr` bodies in the MVP. They may include byte counts and execution metadata.
 
 ## Failure Handling
 
@@ -167,12 +247,12 @@ If audit writing fails after a tool has executed, OpenGate should still return t
 
 If pending storage fails for a `require_approval` request, OpenGate must not report the request as pending. It should return a validation or storage error instead.
 
+If resolved storage fails after a human approval or denial, OpenGate must not remove the pending record.
+
 ## Deferred Design
 
 These topics are outside the MVP:
 
-- Human approval record transitions.
-- Approved and denied approval event types.
 - SQLite-backed storage.
 - Session-level bulk approval storage.
 - Tamper-evident audit logs.
