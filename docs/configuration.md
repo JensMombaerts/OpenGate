@@ -81,6 +81,8 @@ command: "git status --short"
 
 Params let agents provide named values to a tool request. Commands reference params with placeholders.
 
+See [cli-contract.md](cli-contract.md) for how agents pass params to OpenGate.
+
 ```yaml
 tools:
   show_file:
@@ -230,4 +232,3 @@ These topics are intentionally deferred until after the CLI MVP works:
 - Should unknown tools default to `require_approval` forever, or should production configs use `deny`?
 - What storage format should pending approvals use in the first implementation?
 - Should MVP params support allowlists before the first release?
-- What exact CLI request and response contract should agents use?

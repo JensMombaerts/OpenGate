@@ -52,6 +52,8 @@ deny             -> audit denial -> return denial
 require_approval -> store pending request -> audit pending -> return request ID
 ```
 
+See [cli-contract.md](cli-contract.md) for the MVP agent-facing CLI request and response contract.
+
 ## Configuration
 
 YAML is the preferred initial configuration format. See [configuration.md](configuration.md) for the MVP configuration contract.
@@ -106,6 +108,5 @@ The MVP should prioritize two security concerns:
 ## Open Questions
 
 - Which runtime and language should implement the CLI MVP?
-- What exact CLI request and response contract should agents use?
 - What is the simplest practical pending-approval storage for the MVP?
 - How should approval execution be triggered after a request is approved?

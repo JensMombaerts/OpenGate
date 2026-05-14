@@ -33,6 +33,8 @@ This preference can change if implementation experience shows that TOML or JSON 
 
 See [docs/configuration.md](docs/configuration.md) for the MVP configuration contract.
 
+See [docs/cli-contract.md](docs/cli-contract.md) for the MVP agent-facing CLI contract.
+
 ## Project Status
 
 OpenGate is in the bootstrap phase. The current focus is defining the project intent, collaboration rules, and initial architecture before choosing a runtime, language, package manager, or implementation structure.
