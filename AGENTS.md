@@ -1,36 +1,45 @@
 # Agent Instructions
 
-These instructions apply to AI agents working in this repository.
+## Project Purpose
 
-## Project Intent
+- OpenGate is a policy boundary for AI agents calling external tools through CLI, MCP, or HTTP integrations.
+- Tool requests resolve to `allow`, `deny`, or `require_approval`.
+- Decisions must be explicit, configurable, and auditable.
 
-OpenGate is a configurable gate layer for AI agents that call external tools through MCP or CLI interfaces. The gate decides whether tool access is allowed, blocked, or deferred for external approval based on configuration.
+## Current State
 
-Design and implementation choices should preserve this intent: explicit access control, auditable decisions, configurable tools, and safe deferred approval flows.
+- The project is in bootstrap/design phase.
+- Do not introduce a runtime, package manager, framework, schema, or infrastructure choice without a concrete implementation need.
+- YAML is the preferred initial config format unless implementation feedback proves otherwise.
 
-## Working Rules
+## Development Commands
 
-- Read the existing project context before making changes.
-- Prefer small, focused changes over broad rewrites.
-- Keep commits atomic: one coherent change per commit.
-- Commit and push only after the relevant checks or reviews have completed successfully.
-- Do not force push unless the user explicitly requests it and understands the risk.
-- Do not commit secrets, credentials, tokens, or local machine-specific configuration.
-- Update documentation when behavior, architecture, or project conventions change.
-- Before committing documentation changes, check that `README.md`, `AGENTS.md`, and architecture documentation stay consistent with each other.
-- Avoid adding infrastructure, dependencies, or configuration files before there is a concrete need.
+- No build, test, lint, or format commands are defined yet.
+- When commands are introduced, add the exact focused checks here.
 
-## Design Guidelines
+## Architecture Constraints
 
-- Treat OpenGate as a policy boundary, not just a command wrapper.
-- Prefer explicit configuration over implicit behavior.
-- Validate configuration strictly once a config format and schema are introduced.
-- Keep approval, denial, and allow decisions auditable.
+- OpenGate executes approved tools inside the gate boundary.
+- Keep the core model independent of any single agent, transport, runtime, or tool ecosystem.
+- Prefer explicit configuration and strict validation over implicit behavior.
 - Support deferred approvals as a first-class workflow.
-- Avoid coupling the core model to a single agent, tool, or transport protocol.
 
-## Current Defaults
+## Security And Audit Requirements
 
-- YAML is the preferred initial configuration format, pending implementation feedback.
-- MCP and CLI are both expected integration surfaces.
-- Runtime, language, package manager, and project structure are not chosen yet.
+- Do not leak secrets through logs, callbacks, approval payloads, stored requests, or tool output handling.
+- Keep commands and arguments structured; avoid shell interpolation where possible.
+- Audit allow, deny, approval, and execution outcomes with enough metadata to reconstruct decisions.
+
+## Documentation Rules
+
+- Update docs when behavior, architecture, or project conventions change.
+- Keep `README.md`, `AGENTS.md`, and `docs/architecture.md` consistent.
+- Put detailed architecture rationale in `docs/architecture.md`, not here.
+
+## Workflow Notes
+
+- Prefer small, focused changes.
+- Keep commits atomic.
+- Commit and push only after relevant checks or review.
+- Avoid adding dependencies, infrastructure, or configuration files before there is a concrete need.
+- Do not commit secrets, credentials, tokens, or local machine-specific configuration.
