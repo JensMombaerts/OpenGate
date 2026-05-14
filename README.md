@@ -33,9 +33,7 @@ This preference can change if implementation experience shows that TOML or JSON 
 
 See [docs/configuration.md](docs/configuration.md) for the MVP configuration contract.
 
-See [docs/cli-contract.md](docs/cli-contract.md) for the MVP agent-facing CLI contract.
-
-See [docs/approval-cli.md](docs/approval-cli.md) for the MVP human approval CLI contract.
+See [docs/cli-contract.md](docs/cli-contract.md) for the MVP CLI contract.
 
 See [docs/audit-and-storage.md](docs/audit-and-storage.md) for the MVP audit and pending storage contract.
 

@@ -54,9 +54,7 @@ human deny      -> audit denial -> move request to resolved
 human approve   -> audit approval -> execute planned command -> audit result -> move request to resolved
 ```
 
-See [cli-contract.md](cli-contract.md) for the MVP agent-facing CLI request and response contract.
-
-See [approval-cli.md](approval-cli.md) for the MVP human approval CLI contract.
+See [cli-contract.md](cli-contract.md) for the MVP agent-facing and human approval CLI contract.
 
 See [audit-and-storage.md](audit-and-storage.md) for the MVP audit event and pending storage contract.
 

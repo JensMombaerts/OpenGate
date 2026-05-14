@@ -61,7 +61,7 @@ The MVP should support these event types:
 - `approval_approved`: A human approved a pending request for execution.
 - `executed`: OpenGate executed an allowed or approved tool.
 
-See [approval-cli.md](approval-cli.md) for human approval commands.
+See [cli-contract.md](cli-contract.md) for human approval commands.
 
 ## Validation Error Event
 
