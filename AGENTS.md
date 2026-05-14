@@ -33,7 +33,7 @@
 ## Documentation Rules
 
 - Update docs when behavior, architecture, or project conventions change.
-- Keep `README.md`, `AGENTS.md`, and `docs/architecture.md` consistent.
+- Keep `README.md`, `AGENTS.md`, `docs/architecture.md`, and related design docs consistent.
 - Put detailed architecture rationale in `docs/architecture.md`, not here.
 
 ## Workflow Notes

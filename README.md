@@ -32,6 +32,8 @@ The tool and policy layer should be fully configurable through files. YAML is th
 
 This preference can change if implementation experience shows that TOML or JSON is a better fit.
 
+See [docs/configuration.md](docs/configuration.md) for the initial configuration contract.
+
 ## Project Status
 
 OpenGate is in the bootstrap phase. The current focus is defining the project intent, collaboration rules, and initial architecture before choosing a runtime, language, package manager, or implementation structure.

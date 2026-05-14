@@ -55,7 +55,9 @@ YAML is the preferred initial configuration format. It is readable for nested to
 
 Configuration must be validated strictly once the schema exists. Unknown fields, missing required fields, and invalid types should be treated as errors rather than silently ignored.
 
-The first schema should cover:
+See [configuration.md](configuration.md) for the initial human-readable configuration contract.
+
+The configuration model should account for:
 
 - Configured CLI tools.
 - Configured MCP tools or servers.
