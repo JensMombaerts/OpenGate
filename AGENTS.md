@@ -2,7 +2,8 @@
 
 ## Project Purpose
 
-- OpenGate is a policy boundary for AI agents calling external tools through CLI, MCP, or HTTP integrations.
+- OpenGate is a policy boundary for AI agents calling external tools.
+- The MVP is CLI-only; MCP and HTTP integrations are deferred.
 - Tool requests resolve to `allow`, `deny`, or `require_approval`.
 - Decisions must be explicit, configurable, and auditable.
 
@@ -10,7 +11,7 @@
 
 - The project is in bootstrap/design phase.
 - Do not introduce a runtime, package manager, framework, schema, or infrastructure choice without a concrete implementation need.
-- YAML is the preferred initial config format unless implementation feedback proves otherwise.
+- YAML is the MVP config format unless implementation feedback proves otherwise.
 
 ## Development Commands
 
@@ -23,6 +24,7 @@
 - Keep the core model independent of any single agent, transport, runtime, or tool ecosystem.
 - Prefer explicit configuration and strict validation over implicit behavior.
 - Support deferred approvals as a first-class workflow.
+- Keep the MVP small: CLI tools, per-tool decisions, JSONL audit, and minimal pending approval storage.
 
 ## Security And Audit Requirements
 

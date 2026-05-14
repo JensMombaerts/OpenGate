@@ -1,417 +1,233 @@
 # Configuration
 
-This document defines the initial OpenGate configuration direction. It is a human-readable contract, not a machine schema or implementation commitment.
+This document defines the MVP configuration contract for OpenGate. It is intentionally small and focused on CLI tool execution.
 
 ## Purpose
 
-OpenGate configuration describes which tools exist, how agents may request them, how policies are evaluated, how approvals are queued, and how audit and redaction behavior works.
+`opengate.yaml` tells OpenGate which CLI tools exist and whether each tool should be allowed, denied, or deferred for approval.
 
-The first configuration format is YAML. The default project-level file name is `opengate.yaml`.
+The MVP config should be easy to read, strict to validate, and small enough to implement without building a full policy platform first.
 
-## Design Goals
+## MVP Rules
 
-- Keep tool access explicit and reviewable.
-- Prefer strict validation over permissive parsing.
-- Keep commands and callback actions structured, not shell-interpolated strings.
-- Make policy decisions auditable.
-- Make redaction and secret handling configurable.
-- Avoid choosing a runtime, package manager, or schema tooling in this document.
-
-## Config File
-
-The default config file is `opengate.yaml` in the project root.
-
-Every config must include a version:
-
-```yaml
-version: 1
-```
-
-The first version should use YAML as the primary authoring format. TOML and JSON may be reconsidered later if implementation feedback shows they are a better fit.
-
-## Validation Rules
-
-Configuration validation should be strict once implemented:
-
-- Unknown top-level sections are errors.
-- Unknown fields inside known sections are errors.
-- Missing required fields are errors.
-- Invalid enum values are errors.
-- Tool command arrays must remain structured arrays, not shell command strings.
-- Callback command arrays must remain structured arrays, not shell command strings.
-- Secret values must not be logged or sent in callbacks unless explicitly allowed and redacted.
-- Policy decisions must be one of `allow`, `deny`, or `require_approval`.
-
-Reasons are optional. OpenGate should still provide a useful fallback explanation when a policy does not define one.
+- The default config file is `opengate.yaml` in the project root.
+- YAML is the only MVP config format.
+- `version: 1` is required.
+- Only CLI tools are supported in the MVP.
+- Every configured tool has exactly one `decision`.
+- Supported decisions are `allow`, `deny`, and `require_approval`.
+- Unknown tools default to `require_approval`.
+- Commands are arrays, never shell strings.
+- Tool params are named values substituted into command placeholders.
+- Tool output bodies are not logged.
+- Audit events are written as JSONL.
 
 ## Top-Level Shape
 
-The initial top-level shape should be:
-
 ```yaml
 version: 1
-environment: local
 
-environments: {}
-agents: {}
 tools: {}
-policies: []
-approvals: {}
-callbacks: {}
-audit: {}
-redaction: {}
+
+audit:
+  path: ".opengate/audit.jsonl"
 ```
 
-Required sections and exact field requirements will be finalized when a machine-readable schema is introduced.
+## Validation
 
-## Environments
+MVP validation should be strict:
 
-OpenGate should support named environment blocks. A base config defines defaults, and named environments can override specific values.
-
-```yaml
-environment: local
-
-environments:
-  local:
-    audit:
-      level: standard
-  ci:
-    audit:
-      level: high
-```
-
-Exact merge semantics are still open. The intended model is explicit overrides, not implicit behavior hidden from review.
+- Unknown top-level sections are errors.
+- Unknown tool fields are errors.
+- Missing required fields are errors.
+- Invalid decisions are errors.
+- Command values that are not arrays are errors.
 
 ## Tools
 
-Tools are configured by stable IDs. Policies reference these IDs through `match.tool`.
+Tools are configured by stable IDs. Agents request tools by ID.
 
 ```yaml
 tools:
   git_status:
-    type: cli
-    command: ["git", "status", "--short", "{params.path}"]
-```
-
-The first concrete tool type is `cli`. MCP and HTTP should remain part of the config model, but their detailed shape can be defined later.
-
-## CLI Tools
-
-CLI tools use command arrays. OpenGate must not require shell interpolation to execute a configured CLI tool.
-
-Agent-provided input should use named params. Command arrays can refer to params through placeholders such as `{params.path}`.
-
-```yaml
-tools:
-  list_directory:
-    type: cli
-    command: ["ls", "-la", "{params.path}"]
-    params:
-      path:
-        type: string
-        default: "."
-        allowlist:
-          - "."
-          - "docs"
-```
-
-CLI params should support allowlist validation first. More expressive validation may be added later only when there is a concrete need.
-
-Params may be marked as secrets. Secret params must be redacted in logs, callbacks, approval payloads, and stored requests unless a future config explicitly permits a safer alternative.
-
-```yaml
-params:
-  token:
-    type: string
-    secret: true
-```
-
-## MCP Tools
-
-MCP is an expected integration surface, but the first configuration document only treats it conceptually.
-
-Future MCP configuration should map MCP servers and tools into the same policy model as CLI tools. Policies should still use stable tool IDs and the same decision model.
-
-```yaml
-tools:
-  example_mcp_tool:
-    type: mcp
-    # Detailed MCP configuration is intentionally deferred.
-```
-
-## HTTP Tools
-
-HTTP endpoints are also expected tool integrations, but their detailed configuration is deferred.
-
-Future HTTP configuration should support explicit host, method, request shape, response handling, audit, and redaction behavior. Network access should remain explicit and policy-controlled.
-
-```yaml
-tools:
-  example_http_tool:
-    type: http
-    # Detailed HTTP configuration is intentionally deferred.
-```
-
-## Named Params
-
-Agents should submit named params instead of raw shell strings. OpenGate maps those params into configured tool command arrays through placeholders.
-
-Missing params may use configured defaults. If no value and no default exists, OpenGate should reject the request as a validation error before policy execution.
-
-Params should be validated against allowlists in the first implementation. This keeps early behavior simple and safe.
-
-## Policies
-
-Policies use a `match` object to describe scope. Supported scopes are agent, session, tool, project workspace path, and environment.
-
-```yaml
-policies:
-  - id: deny_sensitive_tool_in_ci
-    match:
-      tool: deploy_production
-      environment: ci
-    decision: deny
-    reason: "Production deploys are not allowed from CI agents."
-
-  - id: approve_git_apply
-    match:
-      tool: git_apply
-      project:
-        workspace_path: "/home/jens/Projects/OpenGate"
-    decision: require_approval
-    reason: "Patch application changes the workspace and requires review."
-    audit_level: high
-
-  - id: allow_git_status
-    match:
-      tool: git_status
+    command: ["git", "status", "--short"]
     decision: allow
 ```
 
-If multiple policies match, decision priority is fixed:
+Each tool supports:
 
-```text
-deny > require_approval > allow
-```
+- `command`: required command array.
+- `decision`: required decision.
+- `params`: optional named params.
+- `reason`: optional human-readable explanation for deny or approval decisions.
 
-Policy order does not override this priority. If multiple policies match at the same decision level, OpenGate should return the winning decision with one relevant reason. Detailed aggregation can be revisited later.
+## Commands
 
-If no policy matches, the default decision is `require_approval`. Config authors should still define an explicit fallback policy for readability.
+Commands must be arrays so OpenGate can execute without shell interpolation.
+
+Allowed:
 
 ```yaml
-policies:
-  - id: fallback_review
-    match: {}
+command: ["git", "status", "--short"]
+```
+
+Not allowed:
+
+```yaml
+command: "git status --short"
+```
+
+## Params
+
+Params let agents provide named values to a tool request. Commands reference params with placeholders.
+
+```yaml
+tools:
+  show_file:
+    command: ["sed", "-n", "1,120p", "{file}"]
     decision: require_approval
-    reason: "No more specific policy matched this request."
+    params:
+      file:
+        required: true
 ```
 
-## Approvals
+MVP params support:
 
-Requests with `require_approval` are stored in an approval queue. The first approval interface should be human-facing CLI review.
+- `required`: whether the request must provide the param.
+- `default`: optional default value when a param is not provided.
 
-Configuration should support reviewer hints on tools or policies:
+If a required param is missing and has no default, OpenGate should reject the request before execution.
+
+The MVP should avoid complex validation. Allowlists, type schemas, secret annotations, and redaction rules can be added later if the simple contract proves useful.
+
+## Decisions
+
+### `allow`
+
+OpenGate executes the tool immediately.
 
 ```yaml
-approvals:
-  queue: required
-  reviewer_hints:
-    labels: ["filesystem", "workspace-write"]
-    risk: medium
-    message: "Review whether this request can modify project files."
+tools:
+  git_status:
+    command: ["git", "status", "--short"]
+    decision: allow
 ```
 
-OpenGate should support approval per request and bulk approval or denial for all open requests in an agent session.
+### `deny`
 
-## Callbacks
-
-The first callback type is a CLI command array. Callback commands must be structured arrays and must not require shell interpolation.
+OpenGate rejects the request.
 
 ```yaml
-callbacks:
-  notify_agent:
-    type: cli
-    command: ["opengate-agent-callback", "--request", "{request.id}"]
-    payload:
-      include_request: true
-      include_decision: true
-      include_execution_metadata: true
-      include_output_body: false
+tools:
+  dangerous_delete:
+    command: ["rm", "-rf", "{path}"]
+    decision: deny
+    reason: "Recursive deletion is not available through OpenGate."
+    params:
+      path:
+        required: true
 ```
 
-Callback payload groups should be configurable. Output body may only be included when explicitly enabled and redaction is active for that payload.
+### `require_approval`
+
+OpenGate stores the request as pending approval and returns a request ID.
+
+```yaml
+tools:
+  git_apply:
+    command: ["git", "apply", "{patch_file}"]
+    decision: require_approval
+    reason: "Applying patches changes the workspace."
+    params:
+      patch_file:
+        required: true
+```
+
+## Unknown Tools
+
+If an agent requests a tool that is not configured, OpenGate should return `require_approval` rather than executing anything.
+
+Unknown tools must not execute automatically.
 
 ## Audit Logging
 
-Audit logging should use structured JSONL events.
+The MVP writes structured JSONL audit events to the configured path.
 
 ```yaml
 audit:
   path: ".opengate/audit.jsonl"
-  level: standard
-  output:
-    body: omit
-    metadata: true
 ```
 
-Audit logs should include enough metadata to reconstruct decisions, approvals, denials, and executions. Tool output bodies should not be logged by default. Output metadata such as status, exit code, size, duration, and redaction state may be logged.
+Audit events should include request and decision metadata. They should not include tool output bodies.
 
-Policies may set `audit_level` for higher-risk requests.
+Useful MVP audit fields include:
 
-## Redaction
-
-Redaction should support both named patterns and explicit field paths.
-
-```yaml
-redaction:
-  patterns:
-    - secret
-    - token
-    - password
-    - api_key
-  fields:
-    - "request.params.token"
-    - "callbacks.payload.output.body"
-```
-
-Params marked with `secret: true` must also be treated as redaction targets.
+- Request ID.
+- Tool ID.
+- Decision.
+- Reason when available.
+- Timestamp.
+- Execution status when executed.
+- Exit code when available.
+- Output byte counts when available.
 
 ## Example Configuration
 
 ```yaml
 version: 1
-environment: local
-
-environments:
-  local:
-    audit:
-      level: standard
-  ci:
-    audit:
-      level: high
 
 tools:
   git_status:
-    type: cli
-    command: ["git", "status", "--short", "{params.path}"]
-    params:
-      path:
-        type: string
-        default: "."
-        allowlist: [".", "docs"]
-
-  git_apply:
-    type: cli
-    command: ["git", "apply", "{params.patch_file}"]
-    params:
-      patch_file:
-        type: string
-        allowlist: ["/tmp/opencode/generated.patch"]
-
-  example_mcp_tool:
-    type: mcp
-
-  example_http_tool:
-    type: http
-
-policies:
-  - id: deny_ci_patch_apply
-    match:
-      tool: git_apply
-      environment: ci
-    decision: deny
-    reason: "Applying patches from CI is not allowed."
-
-  - id: review_workspace_writes
-    match:
-      tool: git_apply
-      project:
-        workspace_path: "/home/jens/Projects/OpenGate"
-    decision: require_approval
-    reason: "Patch application modifies the workspace."
-    audit_level: high
-
-  - id: allow_status_checks
-    match:
-      tool: git_status
+    command: ["git", "status", "--short"]
     decision: allow
 
-  - id: fallback_review
-    match: {}
+  git_diff:
+    command: ["git", "diff", "--", "{path}"]
+    decision: allow
+    params:
+      path:
+        default: "."
+
+  git_apply:
+    command: ["git", "apply", "{patch_file}"]
     decision: require_approval
-    reason: "No more specific policy matched this request."
+    reason: "Applying patches changes the workspace."
+    params:
+      patch_file:
+        required: true
 
-approvals:
-  queue: required
-  reviewer_hints:
-    labels: ["workspace", "agent-request"]
-    risk: medium
-    message: "Review queued requests before allowing workspace changes."
-
-callbacks:
-  notify_agent:
-    type: cli
-    command: ["opengate-agent-callback", "--request", "{request.id}"]
-    payload:
-      include_request: true
-      include_decision: true
-      include_execution_metadata: true
-      include_output_body: false
+  recursive_delete:
+    command: ["rm", "-rf", "{path}"]
+    decision: deny
+    reason: "Recursive deletion is blocked in the MVP."
+    params:
+      path:
+        required: true
 
 audit:
   path: ".opengate/audit.jsonl"
-  level: standard
-  output:
-    body: omit
-    metadata: true
-
-redaction:
-  patterns: ["secret", "token", "password", "api_key"]
-  fields:
-    - "request.params.token"
-    - "callbacks.payload.output.body"
 ```
 
-## Additional Snippets
+## Deferred Design
 
-A secret param:
+These topics are intentionally deferred until after the CLI MVP works:
 
-```yaml
-params:
-  api_token:
-    type: string
-    secret: true
-```
-
-A high-risk approval policy:
-
-```yaml
-policies:
-  - id: review_network_call
-    match:
-      tool: external_api_request
-      agent:
-        id: opencode
-    decision: require_approval
-    audit_level: high
-```
-
-A session-scoped approval policy:
-
-```yaml
-policies:
-  - id: review_session_changes
-    match:
-      session:
-        id: "agent-session-123"
-    decision: require_approval
-```
+- MCP tools.
+- HTTP tools.
+- Agent, session, project, and environment scopes.
+- Multiple policy rules per tool.
+- Decision priority across multiple matching policies.
+- Environment overrides.
+- Callback actions.
+- Configurable redaction.
+- Secret param metadata.
+- SQLite-backed approval storage.
+- Bulk approval by agent session.
+- Web and mobile approval APIs.
 
 ## Open Questions
 
-- What are the exact environment override merge rules?
-- What is the exact request format for named params?
-- How should MCP servers and tools be configured in detail?
-- How should HTTP hosts, methods, paths, headers, and bodies be configured in detail?
-- How should callback payload redaction be proven before output body inclusion is allowed?
-- Should fallback policies become required once the schema is implemented?
+- Should unknown tools default to `require_approval` forever, or should production configs use `deny`?
+- What storage format should pending approvals use in the first implementation?
+- Should MVP params support allowlists before the first release?
+- What exact CLI request and response contract should agents use?

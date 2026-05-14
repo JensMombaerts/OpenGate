@@ -1,6 +1,6 @@
 # OpenGate
 
-OpenGate is a gate layer for AI agents that need to call external tools through MCP or CLI interfaces.
+OpenGate is a gate layer for AI agents that need to call external tools. The MVP focuses on CLI tools first.
 
 The goal is to make tool access explicit, configurable, and auditable. Agents can submit tool requests to OpenGate, and OpenGate decides whether each request is allowed immediately, blocked, or queued for external approval based on project configuration.
 
@@ -13,26 +13,25 @@ OpenGate should support workflows where agents continue their session without wa
 ## Core Concepts
 
 - **Agent**: The caller that wants to use a tool, such as OpenCode or another AI agent.
-- **Tool**: A configured MCP server, CLI command, or other callable integration.
+- **Tool**: A configured callable integration. The MVP supports CLI commands.
 - **Gate**: The OpenGate decision layer that evaluates requests.
 - **Policy**: Configuration that determines whether a request is allowed, denied, or requires approval.
 - **Approval queue**: A deferred review mechanism for requests that cannot be granted immediately.
 - **Callback action**: A future mechanism for notifying agents or systems when deferred decisions are resolved.
 
-## Request Flow
+## MVP Request Flow
 
 ```text
-agent -> OpenGate -> policy evaluation -> allow | deny | queue for approval
-                                      -> optional callback/result handling
+agent -> OpenGate -> tool decision -> allow | deny | queue for approval
 ```
 
 ## Configuration Direction
 
-The tool and policy layer should be fully configurable through files. YAML is the current preferred format because it is readable for nested tool definitions and policy rules, while still being suitable for schema validation.
+The tool and decision layer should be configurable through files. YAML is the current preferred format because it is readable and suitable for strict validation.
 
 This preference can change if implementation experience shows that TOML or JSON is a better fit.
 
-See [docs/configuration.md](docs/configuration.md) for the initial configuration contract.
+See [docs/configuration.md](docs/configuration.md) for the MVP configuration contract.
 
 ## Project Status
 
