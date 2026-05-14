@@ -113,4 +113,4 @@ The MVP should prioritize two security concerns:
 
 ## Open Questions
 
-- Which runtime and language should implement the CLI MVP?
+The MVP implementation uses TypeScript on Node.js. This keeps iteration fast, fits the MCP and HTTP ecosystem, and allows the CLI and future API to remain in one codebase.

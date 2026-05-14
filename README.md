@@ -39,7 +39,7 @@ See [docs/audit-and-storage.md](docs/audit-and-storage.md) for the MVP audit and
 
 ## Project Status
 
-OpenGate is in the bootstrap phase. The current focus is defining the project intent, collaboration rules, and initial architecture before choosing a runtime, language, package manager, or implementation structure.
+OpenGate is in the bootstrap/MVP phase. The implementation runtime is TypeScript on Node.js, with npm for package management.
 
 See [docs/architecture.md](docs/architecture.md) for the current architecture direction.
 

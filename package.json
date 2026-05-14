@@ -1,0 +1,23 @@
+{
+  "name": "opengate",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "opengate": "./dist/cli.js"
+  },
+  "scripts": {
+    "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+    "build": "npm run clean && tsc -p tsconfig.json",
+    "test": "vitest run tests",
+    "check": "npm run build && npm run test"
+  },
+  "dependencies": {
+    "yaml": "^2.6.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2",
+    "vitest": "^4.1.6"
+  }
+}

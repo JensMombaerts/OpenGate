@@ -9,14 +9,15 @@
 
 ## Current State
 
-- The project is in bootstrap/design phase.
-- Do not introduce a runtime, package manager, framework, schema, or infrastructure choice without a concrete implementation need.
+- The project is in bootstrap/MVP phase.
+- TypeScript on Node.js is the MVP runtime, with npm for package management.
 - YAML is the MVP config format unless implementation feedback proves otherwise.
 
 ## Development Commands
 
-- No build, test, lint, or format commands are defined yet.
-- When commands are introduced, add the exact focused checks here.
+- `npm run build`: compile TypeScript.
+- `npm test`: run the test suite.
+- `npm run check`: run build and tests.
 
 ## Architecture Constraints
 
