@@ -8,7 +8,7 @@ The goal is to make tool access explicit, configurable, and auditable. Agents ca
 
 AI agents often need access to powerful local or remote tools. Direct access is convenient, but it can also be unsafe or hard to review. OpenGate provides a configurable control point between agents and tools.
 
-OpenGate should support workflows where agents continue their session without waiting for every approval decision. Requests that need approval can be queued and resolved later, potentially through callbacks or another completion mechanism.
+OpenGate should support workflows where agents continue their session without waiting for every approval decision. Requests that need approval can be queued and resolved later. Callback handling is future direction and is not part of the CLI MVP.
 
 ## Core Concepts
 
@@ -36,6 +36,60 @@ See [docs/configuration.md](docs/configuration.md) for the MVP configuration con
 See [docs/cli-contract.md](docs/cli-contract.md) for the MVP CLI contract.
 
 See [docs/audit-and-storage.md](docs/audit-and-storage.md) for the MVP audit and pending storage contract.
+
+## Development Setup
+
+Install dependencies and build the CLI:
+
+```bash
+npm install
+npm run build
+```
+
+Run the test suite and TypeScript build together:
+
+```bash
+npm run check
+```
+
+For local development, link the CLI globally:
+
+```bash
+npm link
+```
+
+After linking, `opengate` can be used from any directory. The MVP looks for `opengate.yaml` in the current working directory.
+
+## Minimal Config
+
+Create an `opengate.yaml` in the project directory where you want to gate tool access:
+
+```yaml
+version: 1
+
+tools:
+  git_status:
+    command: ["git", "status", "--short"]
+    decision: allow
+
+  git_apply:
+    command: ["git", "apply", "{patch_file}"]
+    decision: require_approval
+    reason: "Applying patches changes the workspace."
+    params:
+      patch_file:
+        required: true
+
+audit:
+  path: ".opengate/audit.jsonl"
+```
+
+Run a configured tool:
+
+```bash
+opengate run git_status
+opengate run git_apply --param patch_file=/tmp/change.patch
+```
 
 ## Project Status
 

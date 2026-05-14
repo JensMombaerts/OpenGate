@@ -111,6 +111,6 @@ The MVP should prioritize two security concerns:
 - Avoid command injection by using structured command arrays and named params.
 - Avoid secret leakage by not logging tool output bodies and by keeping request data minimal.
 
-## Open Questions
+## Implementation Runtime
 
 The MVP implementation uses TypeScript on Node.js. This keeps iteration fast, fits the MCP and HTTP ecosystem, and allows the CLI and future API to remain in one codebase.
